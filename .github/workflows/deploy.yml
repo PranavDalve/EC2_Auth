@@ -27,15 +27,12 @@ jobs:
             git pull origin main
 
             echo "Installing dependencies..."
-            npm install
-
-            echo "Building TypeScript..."
-            npm run build
-
-            echo "Restarting server with PM2..."
+            npm install          # install deps
+            npm run build        # compile TS → JS
             pm2 delete auth-api 2>/dev/null || true
             pm2 start dist/index.js --name auth-api
             pm2 save
+
 
             echo "Deployment finished!"
           EOF
