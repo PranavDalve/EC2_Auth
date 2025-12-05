@@ -2,8 +2,8 @@ name: Deploy to EC2
 
 on:
   push:
-    branches: [ main ]          # change to master if your branch is called master
-  workflow_dispatch:            # lets you run it manually anytime
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -21,19 +21,21 @@ jobs:
           ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
 
           ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} -p ${{ secrets.EC2_PORT || 22 }} << 'EOF'
-            cd /home/ubuntu/EC2_Auth      # ← CHANGE THIS LINE ONLY
+            cd /home/ubuntu/EC2_Auth
 
             echo "Pulling latest code..."
             git pull origin main
 
-            # ←←← PUT YOUR RESTART COMMANDS BELOW THIS LINE (I will customize them in 10 seconds)
             echo "Installing dependencies..."
-            npm ci --only=production
+            npm install
 
-            echo "Starting/Restarting with PM2..."
-            pm2 delete index 2>/dev/null || true        # delete if already exists
-            pm2 start index.js --name index             # start with name "index"
+            echo "Building TypeScript..."
+            npm run build
+
+            echo "Restarting server with PM2..."
+            pm2 delete auth-api 2>/dev/null || true
+            pm2 start dist/index.js --name auth-api
             pm2 save
-            
+
             echo "Deployment finished!"
           EOF
