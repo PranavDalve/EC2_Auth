@@ -52,7 +52,8 @@ export const login = async (req: Request, res: Response) => {
 export const userView = async(req: Request, res: Response) => {
   const user = await userRepo.find({
     select: {
-      name: true
+      name: true,
+      email: true
     }
   })
 
